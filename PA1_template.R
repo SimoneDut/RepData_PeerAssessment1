@@ -1,20 +1,3 @@
----
-title: 'Reproducible Research: Peer Assessment 1'
-author: "Simone"
-date: "2/16/2020"
-output:
-  html_document:
-    keep_md: yes
-  word_document: default
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-## Loading and preprocessing the data
-
-```{r chunk_1, results = "hide", message = FALSE, warning = FALSE}
 ## Dependencies
 library(dplyr)
 library(tidyr)
@@ -29,36 +12,23 @@ unzip(zippedFileName)
 
 ## Read the dataset
 activity <- read.csv(unzippedFileName, colClasses = c("integer", "factor", "factor"))
-```
 
-- The code depends on the following three libraries: **dplyr**, **tidyr** and **lattice**
-
-## What is mean total number of steps taken per day?
-
-```{r chunk_2}
 ## Calculate the daily totals ignoring NA values
 dailyTotal <- with(activity, tapply(steps, date, function(x) {sum(x, na.rm = TRUE)}))
 
 ## Plot the histogram of the total number of steps taken each day (without imputing)
 par(mfrow = c(1, 1))
-hist(dailyTotal, breaks = 8, col = "green", main = "Total number of steps taken each day (without imputing)",
-     ylim = c(0, 45), xlab = "Number of steps")
+hist(dailyTotal, col = "green", main = "Total number of steps taken each day (without imputing)",
+     ylim = c(0, 50), xlab = "Number of steps")
 
 ## Calculate the mean and median of the total number of steps taken per day and plot them
 meanDaily <- mean(dailyTotal)
 abline(v = meanDaily, col = "red", lwd = 2)
-text(meanDaily - 650, 30, "Mean", col = "red", srt = 90)
+text(meanDaily - 650, 40, "Mean", col = "red", srt = 90)
 medianDaily <- median(dailyTotal)
 abline(v = medianDaily, col = "blue", lwd = 2)
-text(medianDaily - 650, 40, "Median", col = "blue", srt = 90)
-```
+text(medianDaily - 650, 48, "Median", col = "blue", srt = 90)
 
-- The mean of the total number of steps taken per day is ***`r as.integer(round(meanDaily))`***  
-- The median of the total number of steps taken per day is ***`r medianDaily`***
-
-## What is the average daily activity pattern?
-
-```{r chunk_3}
 ## Calculate the average number of steps taken for each 5-minute interval
 intervalAverage <- with(activity, tapply(steps, interval, function(x) {mean(x, na.rm = TRUE)}))
 interval <- as.integer(rownames(intervalAverage))
@@ -68,26 +38,20 @@ intervalAverage <- intervalAverage %>%
   arrange(interval)
 colnames(intervalAverage) <- c("average", "interval")
 
-## Calculate the interval that contains the maximum number of steps
-maxInterval <- intervalAverage[which.max(intervalAverage$average), "interval"]
-maxHours <- as.integer(maxInterval / 100)
-maxMinutes <- maxInterval - maxHours * 100
-
 ## Make a time series plot of the 5-minute interval vs the average number of steps taken
 with(intervalAverage, plot(interval, average, type = "l", col = "blue",
                            main = "Average number of steps by 5-minute inteval (without imputing)",
                            xlab = "Interval", ylab = "Number of steps"))
-```
 
-- The 5-minute interval which contains the maximum number of steps, on average across all the days in the dataset, is ***`r maxInterval`***, which corresponds to the time of ***`r maxHours`:`r maxMinutes`***
+## Calculate the interval that contains the maximum number of steps
+maxInterval <- intervalAverage[which.max(intervalAverage$average), "interval"]
 
-## Imputing missing values
-
-```{r chunk_4}
 ## Calculate and report the total number of missing values in the dataset
 missingValues <- is.na(activity)
 totalMissingValues <- apply(missingValues, 2, sum)
 totalMissingSteps <- totalMissingValues[1]
+
+## Explain the imputing strategy (average for that 5-minute interval, rounded)
 
 ## Create a new dataset with imputing
 hours <- as.integer(intervalAverage$interval / 100)
@@ -100,32 +64,22 @@ activityImputed[missingValues[, "steps"], "steps"] <- as.integer(round(intervalA
 dailyTotalImputed <- with(activityImputed, tapply(steps, date, function(x) {sum(x, na.rm = TRUE)}))
 
 ## Plot the histogram of the total number of steps taken each day (after imputing)
-hist(dailyTotalImputed, breaks = 8, col = "green", main = "Total number of steps taken each day (after imputing)",
-     ylim = c(0, 45), xlab = "Number of steps")
+hist(dailyTotalImputed, col = "green", main = "Total number of steps taken each day (after imputing)",
+     ylim = c(0, 50), xlab = "Number of steps")
 
 ## Calculate the mean and median of the total number of steps taken per day and plot them (after imputing)
 meanDailyImputed <- mean(dailyTotalImputed)
-deltaMean <- meanDailyImputed - meanDaily
 abline(v = meanDailyImputed, col = "red", lwd = 2)
-text(meanDailyImputed - 650, 30, "Mean", col = "red", srt = 90)
+text(meanDailyImputed - 650, 40, "Mean", col = "red", srt = 90)
 
 medianDailyImputed <- median(dailyTotalImputed)
-deltaMedian <- medianDailyImputed - medianDaily
 abline(v = medianDailyImputed, col = "blue", lwd = 2)
-text(medianDailyImputed - 650, 40, "Median", col = "blue", srt = 90)
-```
+text(medianDailyImputed - 650, 48, "Median", col = "blue", srt = 90)
 
-- The total number of missing values in the dataset (i.e. the total number of rows with NAs) is ***`r totalMissingSteps`***  
-- To fill the missing values in the dataset (number of steps), the average across all the days for that 5-minute interval (rounded to zero decimal places) was used  
-- After imputing, the mean of the total number of steps taken per day is ***`r as.integer(round(meanDailyImputed))`***  
-- After imputing, the median of the total number of steps taken per day is ***`r medianDailyImputed`***  
-- Both mean and median differ from the estimates from the first part of the assignment  
-- The difference between the new mean and the old mean is ***`r as.integer(round(deltaMean))`***  
-- The difference between the new median and the old median is ***`r deltaMedian`***
+## Calculate the change in the mean and the median
+deltaMean <- meanDailyImputed - meanDaily
+deltaMedian <- medianDailyImputed - medianDaily
 
-## Are there differences in activity patterns between weekdays and weekends?
-
-```{r chunk_5}
 ## Create a new factor variable indicating whether a given date is a weekday or weekend day
 activityImputed <- activityImputed %>%
   mutate(factorWeekdayWeekend = factor(ifelse(weekdays(as.Date(activityImputed$date)) %in% c("Saturday",
@@ -146,8 +100,6 @@ intervalAverageImputed <- intervalAverageImputed %>%
   arrange(factorWeekdayWeekend, interval)
 
 ## Make a time series plot of the 5-minute interval vs the average number of steps taken by weekday/weekend
-xyplot(average ~ interval | factorWeekdayWeekend, data = intervalAverageImputed, type = "l",
+p <- xyplot(average ~ interval | factorWeekdayWeekend, data = intervalAverageImputed, type = "l",
             layout = c(1, 2), xlab = "Interval", ylab = "Number of steps")
-```
-
-- There are significant differences in activity patterns between weekdays and weekends, for example on average on weekdays the number of steps during working hours is low, while on weekends it is more constant throughout the entire day
+print(p)

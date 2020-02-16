@@ -8,13 +8,12 @@ output:
   word_document: default
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 ## Loading and preprocessing the data
 
-```{r chunk_1, results = "hide", message = FALSE, warning = FALSE}
+
+```r
 ## Dependencies
 library(dplyr)
 library(tidyr)
@@ -35,7 +34,8 @@ activity <- read.csv(unzippedFileName, colClasses = c("integer", "factor", "fact
 
 ## What is mean total number of steps taken per day?
 
-```{r chunk_2}
+
+```r
 ## Calculate the daily totals ignoring NA values
 dailyTotal <- with(activity, tapply(steps, date, function(x) {sum(x, na.rm = TRUE)}))
 
@@ -53,12 +53,15 @@ abline(v = medianDaily, col = "blue", lwd = 2)
 text(medianDaily - 650, 40, "Median", col = "blue", srt = 90)
 ```
 
-- The mean of the total number of steps taken per day is ***`r as.integer(round(meanDaily))`***  
-- The median of the total number of steps taken per day is ***`r medianDaily`***
+![](PA1_template_files/figure-html/chunk_2-1.png)<!-- -->
+
+- The mean of the total number of steps taken per day is ***9354***  
+- The median of the total number of steps taken per day is ***10395***
 
 ## What is the average daily activity pattern?
 
-```{r chunk_3}
+
+```r
 ## Calculate the average number of steps taken for each 5-minute interval
 intervalAverage <- with(activity, tapply(steps, interval, function(x) {mean(x, na.rm = TRUE)}))
 interval <- as.integer(rownames(intervalAverage))
@@ -79,11 +82,14 @@ with(intervalAverage, plot(interval, average, type = "l", col = "blue",
                            xlab = "Interval", ylab = "Number of steps"))
 ```
 
-- The 5-minute interval which contains the maximum number of steps, on average across all the days in the dataset, is ***`r maxInterval`***, which corresponds to the time of ***`r maxHours`:`r maxMinutes`***
+![](PA1_template_files/figure-html/chunk_3-1.png)<!-- -->
+
+- The 5-minute interval which contains the maximum number of steps, on average across all the days in the dataset, is ***835***, which corresponds to the time of ***8:35***
 
 ## Imputing missing values
 
-```{r chunk_4}
+
+```r
 ## Calculate and report the total number of missing values in the dataset
 missingValues <- is.na(activity)
 totalMissingValues <- apply(missingValues, 2, sum)
@@ -115,17 +121,20 @@ abline(v = medianDailyImputed, col = "blue", lwd = 2)
 text(medianDailyImputed - 650, 40, "Median", col = "blue", srt = 90)
 ```
 
-- The total number of missing values in the dataset (i.e. the total number of rows with NAs) is ***`r totalMissingSteps`***  
+![](PA1_template_files/figure-html/chunk_4-1.png)<!-- -->
+
+- The total number of missing values in the dataset (i.e. the total number of rows with NAs) is ***2304***  
 - To fill the missing values in the dataset (number of steps), the average across all the days for that 5-minute interval (rounded to zero decimal places) was used  
-- After imputing, the mean of the total number of steps taken per day is ***`r as.integer(round(meanDailyImputed))`***  
-- After imputing, the median of the total number of steps taken per day is ***`r medianDailyImputed`***  
+- After imputing, the mean of the total number of steps taken per day is ***10766***  
+- After imputing, the median of the total number of steps taken per day is ***10762***  
 - Both mean and median differ from the estimates from the first part of the assignment  
-- The difference between the new mean and the old mean is ***`r as.integer(round(deltaMean))`***  
-- The difference between the new median and the old median is ***`r deltaMedian`***
+- The difference between the new mean and the old mean is ***1411***  
+- The difference between the new median and the old median is ***367***
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-```{r chunk_5}
+
+```r
 ## Create a new factor variable indicating whether a given date is a weekday or weekend day
 activityImputed <- activityImputed %>%
   mutate(factorWeekdayWeekend = factor(ifelse(weekdays(as.Date(activityImputed$date)) %in% c("Saturday",
@@ -149,5 +158,7 @@ intervalAverageImputed <- intervalAverageImputed %>%
 xyplot(average ~ interval | factorWeekdayWeekend, data = intervalAverageImputed, type = "l",
             layout = c(1, 2), xlab = "Interval", ylab = "Number of steps")
 ```
+
+![](PA1_template_files/figure-html/chunk_5-1.png)<!-- -->
 
 - There are significant differences in activity patterns between weekdays and weekends, for example on average on weekdays the number of steps during working hours is low, while on weekends it is more constant throughout the entire day
